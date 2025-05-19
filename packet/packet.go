@@ -1,6 +1,9 @@
 package packet
 
-import "bytes"
+import (
+	"bytes"
+	"fmt"
+)
 
 type Packet interface {
 	Decode([]byte) error
