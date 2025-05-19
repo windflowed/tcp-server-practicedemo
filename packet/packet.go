@@ -5,6 +5,16 @@ import (
 	"fmt"
 )
 
+const (
+	CommandConn     = iota + 0x01
+	CommandSubmit 
+)
+
+const (
+	CommandConnAck  = iota + 0x81
+	CommandSubmitAck
+)
+
 type Packet interface {
 	Decode([]byte) error
 	Encode() ([]byte, error)
