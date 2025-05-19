@@ -53,7 +53,7 @@ func Decode(packet []byte) (Packet, error) {
 	case CommandSubmit:
 		s := Submit{}
 		err := s.Decode(pktBody)
-		if err !- nil {
+		if err != nil {
 			return nil, err
 		}
 		return &s, nil
