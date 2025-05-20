@@ -24,7 +24,7 @@ func main() {
 	}
 }
 
- func startClient(id int) {
+ func startClient(i int) {
 	quit := make(chan struct{})
 	done := make(chan struct{})
 	conn, err := net.Dial("tcp", ":8787")
@@ -33,7 +33,7 @@ func main() {
 	    return
 	}
 	defer conn.Close()
-	fmt.Printf("[client %d]: dial ok", id)
+	fmt.Printf("[client %d]: dial ok", i)
 
 	rng, err := codename.DefaultRNG()
 	if err != nil {
@@ -67,7 +67,7 @@ func main() {
 			if !ok {
 			    panic("not submitack")
 			}
-			fmt.Printf("[client %d]: recv ack: id = %s, result = %d\n", id, submitAck.ID, submitAck.Result)
+			fmt.Printf("[client %d]: recv ack: id = %s, result = %d\n", i, submitAck.ID, submitAck.Result)
 		}
 	}()
 
@@ -85,7 +85,7 @@ func main() {
 			panic(err)
 		}
 
-		fmt.Printf("[client %d]: send submit id = %s, payload = %s, frame length = %d\n", id, s.ID, s.Payload, len(framePayload)+4)
+		fmt.Printf("[client %d]: send submit id = %s, payload = %s, frame length = %d\n", i, s.ID, s.Payload, len(framePayload)+4)
 
 		err = frameCodec.Encode(conn, framePayload)
 		if err != nil {
@@ -96,7 +96,7 @@ func main() {
 		if counter >= 10 {
 			quit <- struct{}{}
 			<- done
-			fmt.Printf("[client %d]: quit\n", id)
+			fmt.Printf("[client %d]: quit\n", i)
 			return
 		}
 	}
