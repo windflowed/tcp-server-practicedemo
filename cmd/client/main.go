@@ -5,6 +5,7 @@ import (
 	"net"
 	"sync"
 	"time"
+
 	"github.com/lucasepe/codename"
 	"github.com/windflowed/tcp-server-practicedemo/frame"
 	"github.com/windflowed/tcp-server-practicedemo/packet"
@@ -22,42 +23,43 @@ func main() {
 			startClient(i)
 		}(i + 1)
 	}
+	wg.Wait()
 }
 
- func startClient(i int) {
+func startClient(i int) {
 	quit := make(chan struct{})
 	done := make(chan struct{})
-	conn, err := net.Dial("tcp", ":8787")
+	conn, err := net.Dial("tcp", ":8888")
 	if err != nil {
-	    fmt.Println("dial error:", err)
-	    return
+		fmt.Println("dial error:", err)
+		return
 	}
 	defer conn.Close()
 	fmt.Printf("[client %d]: dial ok", i)
 
 	rng, err := codename.DefaultRNG()
 	if err != nil {
-	    panic(err)
+		panic(err)
 	}
 
 	frameCodec := frame.NewMyFrameCodec()
 	var counter int
-	
+
 	go func() {
-	    for {
+		for {
 			select {
-				case <- quit:
-					done <- struct{}{}
-					return
-				default:
+			case <-quit:
+				done <- struct{}{}
+				return
+			default:
 			}
-			conn.SetReadDeadline(time.Now().Add(time.Second*1))
+			conn.SetReadDeadline(time.Now().Add(time.Second * 1))
 			ackFramePayload, err := frameCodec.Decode(conn)
 			if err != nil {
-			    if e, ok := err.(net.Error); ok {
-			        if e.Timeout() {
-			            continue
-			        }
+				if e, ok := err.(net.Error); ok {
+					if e.Timeout() {
+						continue
+					}
 				}
 				panic(err)
 			}
@@ -65,14 +67,14 @@ func main() {
 			p, err := packet.Decode(ackFramePayload)
 			submitAck, ok := p.(*packet.SubmitAck)
 			if !ok {
-			    panic("not submitack")
+				panic("not submitack")
 			}
 			fmt.Printf("[client %d]: recv ack: id = %s, result = %d\n", i, submitAck.ID, submitAck.Result)
 		}
 	}()
 
 	for {
-	    counter++
+		counter++
 		id := fmt.Sprintf("%08d", counter)
 		payload := codename.Generate(rng, 4)
 		s := &packet.Submit{
@@ -95,9 +97,9 @@ func main() {
 		time.Sleep(time.Second * 1)
 		if counter >= 10 {
 			quit <- struct{}{}
-			<- done
+			<-done
 			fmt.Printf("[client %d]: quit\n", i)
 			return
 		}
 	}
- }
+}
